@@ -55,6 +55,15 @@ const initializeDataTable = () => {
     });
 }
 
+const initializeDataTableDocs = () => {
+
+    $('#file-docs').DataTable({
+        dom: 'Bfrtip',
+        buttons,
+        language
+    });
+}
+
 $(function (e) {
 
     // basic datatable
@@ -96,6 +105,7 @@ $(function (e) {
 
 
     initializeDataTable();
+    initializeDataTableDocs();
     // file export datatable
 
     // delete row datatable

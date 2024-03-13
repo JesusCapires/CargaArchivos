@@ -10,26 +10,46 @@ class FilesController extends Controller
 {
     private $disk = "public";
 
-    public function loadView()
+    public function loadView($id)
     {
+        $files = [];
+        $folder = "seleccion_$id";
+        foreach (Storage::disk($this->disk)->files($folder) as $file) {
+            $name = basename($file);
+            $picture = "";
+            $sizeKB = number_format(Storage::disk($this->disk)->size($folder. '/' . $name) / 1024, 2) . ' KB';
+            $downloadLink = route("download", $name);
+
+                $files[] = [
+                    "picture" => $picture,
+                    "name" => $name,
+                    "link" => $downloadLink,
+                    "size" => $sizeKB,
+                ];
+        }
+
+        return response()->json(['documentos' => $files]);
 
     }
 
-    public function storeFile(Request $req){
-        // Storage::disk('public')->put("texto.txt", "Hola"); //PERMITE GUARDAR Y ESCRIBIR
+    public function storeFile(Request $req)
+    {
         if($req->isMethod('POST')){
+            $id = $req->input('id');
+            $folder = "seleccion_$id";
+            $disk = $this->disk;
+            if(!Storage::disk($disk)->exists($folder)){
+                Storage::disk($disk)->makeDirectory($folder);
+            }
             $file = $req->file('file');
             $name = $req->input('name');
-            $folder = "documentos";
-
             $file->storeAs($folder, $name.".".$file->extension(), $this->disk);
         }
-        return redirect()->route('listaSelecciones');
     }
 
-    public function seeFile($name)
+    public function seeFile($name, $id)
     {
-        $folder = "documentos";
+        $folder = "seleccion_$id";
         $filePath = $folder . '/' . $name;
         $file = Storage::disk($this->disk)->get($filePath);
         $extension = pathinfo(basename($filePath), PATHINFO_EXTENSION);
@@ -46,9 +66,10 @@ class FilesController extends Controller
 
         return response('', 404);
     }
-    public function downloadFile($name)
+
+    public function downloadFile($name, $id)
     {
-        $folder = "documentos";
+        $folder = "seleccion_$id";
         $filePath = $folder . '/' . $name;
         $file = Storage::disk($this->disk)->get($filePath);
         $headers = [

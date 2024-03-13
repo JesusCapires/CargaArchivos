@@ -27,28 +27,28 @@ class SelectionController extends Controller
      */
     public function index()
     {
-        $files = [];
-        $folder = "documentos";
-        foreach (Storage::disk($this->disk)->files($folder) as $file) {
-            // $name = str_replace("$this->disk/", "", $file);
-            $name = basename($file);
+        // $files = [];
+        // $folder = "documentos";
+        // foreach (Storage::disk($this->disk)->files($folder) as $file) {
+        //     // $name = str_replace("$this->disk/", "", $file);
+        //     $name = basename($file);
 
-            $picture = "";
-            $sizeKB = number_format(Storage::disk($this->disk)->size($folder. '/' . $name) / 1024, 2) . ' KB';
-            $downloadLink = route("download", $name);
+        //     $picture = "";
+        //     $sizeKB = number_format(Storage::disk($this->disk)->size($folder. '/' . $name) / 1024, 2) . ' KB';
+        //     $downloadLink = route("download", $name);
 
-                $files[] = [
-                    "picture" => $picture,
-                    "name" => $name,
-                    "link" => $downloadLink,
-                    "size" => $sizeKB
-                ];
-        }
+        //         $files[] = [
+        //             "picture" => $picture,
+        //             "name" => $name,
+        //             "link" => $downloadLink,
+        //             "size" => $sizeKB
+        //         ];
+        // }
 
         $listaCriterios = Work::select('id', 'description')->where('is_active', 1)->get();
         $listaResponsables = User::select('id', 'name')->where('is_active', 1)->where('role_id', 8)->get();
         $listaProductos = Product::select('id', 'sku','description')->where('is_active', 1)->get();
-        return view('selections', compact('listaCriterios', 'listaResponsables', 'listaProductos', 'files'));
+        return view('selections', compact('listaCriterios', 'listaResponsables', 'listaProductos'));
     }
 
 

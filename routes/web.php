@@ -45,10 +45,11 @@ Route::post('/selections/update/{id}', [SelectionController::class, 'update'])->
 Route::post('/selections/details/store', [DetailSelectionController::class, 'store'])->name('crearDetalleSeleccion');
 Route::get('/selections/details/{id}', [DetailSelectionController::class, 'show'])->name('verDetalleSeleccion');
 
-Route::get('/loadView', [FilesController::class, 'loadView'])->name('loadView');
+Route::get('/loadView/{id}', [FilesController::class, 'loadView'])->name('loadView');
 Route::post('/storeFile', [FilesController::class, 'storeFile'])->name('storeFile');
-Route::get('/descargar/{name}', [FilesController::class, 'downloadFile'])->name('download');
-Route::get('/seeFile/{name}', [FilesController::class, 'seeFile'])->name('seeFile');
+Route::get('/download/{name}', [FilesController::class, 'downloadFile'])->name('download');
+Route::get('/seeFile/{name}/{id}', [FilesController::class, 'downloadFile'])->name('seeFile');
+Route::get('/seeFile2/{name}/{id}', [FilesController::class, 'seeFile'])->name('seeFile2');
 
 
 

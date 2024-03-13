@@ -170,7 +170,7 @@
                                 <input type="hidden" name="_token" value="${_token}">
                                 <input class="form-control" type="file" id="file" name="file" multiple="">
                                 <div class="d-flex align-items-end flex-column">
-                                    <button type="sumbit" class="btn btn-sm btn-primary mt-2 p-2 ms-2" onclick="validaCarga()">Enviar</button>
+                                    <button type="sumbit" class="btn btn-sm btn-primary mt-2 p-2 ms-2" onclick="validaCarga(${id})">Enviar</button>
                                 </div>
                             </form>
                         </div>
@@ -178,57 +178,78 @@
                     <div class="col-xl-12">
                         <div class="mb-3">
                             <label for="formFileMultiple" class="form-label">Archivos subidos</label>
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Archivo</th>
-                                        <th>Tamaño</th>
-                                        <th>Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @if(isset($files))
-                                        @foreach ($files as $file)
-                                            <tr>
-                                                <td><a href="{{$file['link']}}" target="_blank">{{$file['name']}}</a></td>
-                                                <td>{{$file['size']}}</td>
-                                                <td>
-                                                    <a href="{{route('seeFile', ['name' => $file['name']])}}" class="btn btn-icon btn-sm btn-info-transparent rounded-pill" target="_blank">
-                                                        <i class="fe fe-eye"></i>
-                                                    </a>
-                                                    <a href="{{route('download', ['name' => $file['name']])}}" class="btn btn-icon btn-sm btn-info-transparent rounded-pill">
-                                                        <i class="fe fe-download"></i>
-                                                    </a>
-                                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-info-transparent rounded-pill">
-                                                        <i class="fe fe-trash-2"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        @endforeach
-                                    @endif
-                                </tbody>
-                            </table>
+                            <div class="table-responsive">
+                                <table id="file-docs" class="table table-bordered text-nowrap w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>Archivo</th>
+                                            <th>Tamaño</th>
+                                            <th>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="documentosCargados">
+
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
             `;
-
             $('#modalTitulo').empty().append('Documentos');
             $('#modalTamano').removeClass().addClass('modal-dialog');
             $('#modalContenido').empty().append(estructura);
             $('#modalBase').modal('show');
-            // $('#tableDetailsSelection').DataTable({dom: 'Bfrtip', language, buttons, order : [3, "desc"]});
+
+            let ruta = `{{ route('loadView', ['id' => ':id'])}}`;
+            let viewDoc = `{{route('seeFile2', ['name' => ':name', 'id' => ':id'])}}`;
+            let downloadDoc = `{{route('seeFile', ['name' => ':name', 'id' => ':id'])}}`;
+            
+            $.ajax({
+                url: ruta.replace(':id', id),
+                type: 'GET',
+                dataType: "json",
+                success: (response) =>  {
+                    console.log(response);
+                    let { documentos } = response;
+                    let datos = '';
+                    documentos.forEach(({ name, link, size }) => {
+                        let viewDocs = viewDoc.replace(':name', name).replace(':id', id);
+                        let downloadDocs = downloadDoc.replace(':name', name).replace(':id', id);
+                        console.log(viewDocs);
+                        console.log(downloadDocs);
+                        datos += `
+                            <tr>
+                                <td>${name}</td>
+                                <td>${size}</td>
+                                <td>
+                                    <a href="${viewDocs}" class="btn btn-icon btn-sm btn-info-transparent rounded-pill" target="_blank">
+                                        <i class="fe fe-eye"></i>
+                                    </a>
+                                    <a href="${downloadDocs}" class="btn btn-icon btn-sm btn-info-transparent rounded-pill">
+                                        <i class="fe fe-download"></i>
+                                    </a>
+                                <a href="javascript:void(0);" class="btn btn-icon btn-sm btn-info-transparent rounded-pill">
+                                        <i class="fe fe-trash-2"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    $('#documentosCargados').append(datos);
+                    initializeDataTableDocs();
+
+                }
+            });
+            
         }
 
-        const validaCarga = () => {
+        const validaCarga = (id) => {
             let nombre = $('#name').val();
             let archivo = $('#file')[0].files[0];
             let _token = $('input[name="_token"]').val();
 
-            console.log(nombre);
-            console.log(_token);
-            console.log(archivo);
 
             $('#formularioCarge').validate({
                 rules: {
@@ -246,6 +267,7 @@
                 let formData = new FormData(form);
                 formData.append('nombre', nombre);
                 formData.append('archivo', archivo);
+                formData.append('id', id);
 
                 $.ajax({
                     url: "{{ route('storeFile') }}",
@@ -255,11 +277,12 @@
                     contentType: false,
                     success: (response) => {
                     console.log("archivo subido");
+                    verFilesSelection(id);
                     }
                 });
                 }
             });
-            }
+        }
 
 
         let listaResponsables = @json($listaResponsables);
